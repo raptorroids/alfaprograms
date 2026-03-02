@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell on Urban Marketplace</title>
+    <meta name="description" content="Start selling on Urban Marketplace. Create listings, manage inventory, and reach thousands of buyers.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .listing-wizard {
+            display: none;
+        }
+        
+        .listing-wizard.active {
+            display: block;
+        }
+        
+        .step-indicator {
+            position: relative;
+        }
+        
+        .step-indicator::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 100px;
+            height: 2px;
+            background-color: #e5e7eb;
+            transform: translateY(-50%);
+        }
+        
+        .step-indicator.completed::after {
+            background-color: #10b981;
+        }
+        
+        .step-indicator:last-child::after {
+            display: none;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+        
+        .tab-button.active {
+            background-color: #f97316;
+            color: white;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .listing-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .status-active { background-color: #dcfce7; color: #166534; }
+        .status-pending { background-color: #fef3c7; color: #92400e; }
+        .status-sold { background-color: #dbeafe; color: #1e40af; }
+        .status-expired { background-color: #fee2e2; color: #991b1b; }
+        
+        .image-upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 0.5rem;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .image-upload-area:hover {
+            border-color: #f97316;
+            background-color: #fff7ed;
+        }
+        
+        .image-upload-area.dragover {
+            border-color: #f97316;
+            background-color: #fff7ed;
+        }
+        
+        .uploaded-image {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .uploaded-image img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 0.5rem;
+        }
+        
+        .remove-image {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="resources/hero/marketplace-logo.png" alt="Urban Marketplace" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-900">Urban Marketplace</span>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Home</a>
+                    <a href="browse.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Browse</a>
+                    <a href="profile.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Profile</a>
+                    
+                    <!-- Cart -->
+                    <div class="relative">
+                        <a href="cart.html" class="text-gray-700 hover:text-orange-600 transition-colors">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9"></path>
+                            </svg>
+                            <span class="cart-count hidden">0</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-orange-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="bg-gradient-to-r from-orange-600 to-red-600 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Start Selling Today</h1>
+            <p class="text-xl text-white/90 mb-8 max-w-3xl mx-auto">
+                Join thousands of successful sellers on Urban Marketplace. List your products, reach new customers, and grow your business with our trusted platform.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <button class="bg-white text-orange-600 px-8 py-3 rounded-lg text-lg font-semibold hover:bg-gray-100 transition-colors" 
+                        onclick="showCreateListing()">
+                    Create Your First Listing
+                </button>
+                <a href="#dashboard" class="border-2 border-white text-white px-8 py-3 rounded-lg text-lg font-semibold hover:bg-white hover:text-orange-600 transition-colors">
+                    View Dashboard
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seller Dashboard -->
+    <section id="dashboard" class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                <!-- Sidebar -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
+                        <h2 class="text-lg font-semibold text-gray-900 mb-4">Seller Menu</h2>
+                        <nav class="space-y-2">
+                            <button class="tab-button w-full text-left px-4 py-2 rounded-lg bg-orange-600 text-white active" data-tab="overview">
+                                📊 Overview
+                            </button>
+                            <button class="tab-button w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100" data-tab="listings">
+                                🛍️ My Listings
+                            </button>
+                            <button class="tab-button w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100" data-tab="create">
+                                ➕ Create Listing
+                            </button>
+                            <button class="tab-button w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100" data-tab="orders">
+                                📦 Orders
+                            </button>
+                            <button class="tab-button w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100" data-tab="analytics">
+                                📈 Analytics
+                            </button>
+                            <button class="tab-button w-full text-left px-4 py-2 rounded-lg text-gray-700 hover:bg-gray-100" data-tab="settings">
+                                ⚙️ Store Settings
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+                
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <!-- Overview Tab -->
+                    <div class="tab-content active" id="overview">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <div class="flex items-center">
+                                    <div class="bg-orange-100 p-3 rounded-full">
+                                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Total Revenue</p>
+                                        <p class="text-2xl font-bold text-gray-900">$1,247.89</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <div class="flex items-center">
+                                    <div class="bg-green-100 p-3 rounded-full">
+                                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Total Orders</p>
+                                        <p class="text-2xl font-bold text-gray-900">47</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow-md p-6">
+                                <div class="flex items-center">
+                                    <div class="bg-blue-100 p-3 rounded-full">
+                                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm text-gray-600">Active Listings</p>
+                                        <p class="text-2xl font-bold text-gray-900">12</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Recent Activity -->
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
+                            <div class="space-y-4">
+                                <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                                    <div class="bg-green-100 p-2 rounded-full">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">New order received - #ORD-2024-001</p>
+                                        <p class="text-sm text-gray-500">2 hours ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                                    <div class="bg-blue-100 p-2 rounded-full">
+                                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">Listing "Wireless Gaming Mouse" updated</p>
+                                        <p class="text-sm text-gray-500">5 hours ago</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex items-center p-4 bg-gray-50 rounded-lg">
+                                    <div class="bg-orange-100 p-2 rounded-full">
+                                        <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">New follower: TechEnthusiast42</p>
+                                        <p class="text-sm text-gray-500">1 day ago</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Performance Chart -->
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Sales Performance</h3>
+                            <div id="performanceChart" style="height: 300px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- My Listings Tab -->
+                    <div class="tab-content" id="listings">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900">My Listings</h2>
+                                <button class="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors" 
+                                        onclick="showCreateListing()">
+                                    + Create New Listing
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">Wireless Gaming Mouse</h3>
+                                            <p class="text-sm text-gray-500">Listed 3 days ago • ID: #LIST-001</p>
+                                        </div>
+                                        <span class="listing-status status-active">Active</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <img src="https://kimi-web-img.moonshot.cn/img/giftone.com.hk/e15ace28ec74cb0e7108fd33047a59cd544af97f.jpg" 
+                                             alt="Product" class="w-16 h-16 object-cover rounded-lg">
+                                        <div class="ml-4 flex-1">
+                                            <p class="text-gray-600">High-precision gaming mouse with customizable RGB lighting</p>
+                                            <p class="text-sm text-gray-500">Views: 45 | Favorites: 3 | Inquiries: 2</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-semibold text-gray-900">$89.99</p>
+                                            <div class="flex gap-2 mt-2">
+                                                <button class="text-sm text-blue-600 hover:text-blue-700">Edit</button>
+                                                <button class="text-sm text-red-600 hover:text-red-700">Pause</button>
+                                                <button class="text-sm text-green-600 hover:text-green-700">Promote</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">Premium Running Shoes</h3>
+                                            <p class="text-sm text-gray-500">Listed 1 week ago • ID: #LIST-002</p>
+                                        </div>
+                                        <span class="listing-status status-pending">Pending Review</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <img src="https://kimi-web-img.moonshot.cn/img/pic3.zhimg.com/5a5dc1a9c3aa02f65639ece00e871903754aeed5.jpg" 
+                                             alt="Product" class="w-16 h-16 object-cover rounded-lg">
+                                        <div class="ml-4 flex-1">
+                                            <p class="text-gray-600">Lightweight running shoes with advanced cushioning technology</p>
+                                            <p class="text-sm text-gray-500">Views: 12 | Favorites: 1 | Inquiries: 0</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-semibold text-gray-900">$129.99</p>
+                                            <div class="flex gap-2 mt-2">
+                                                <button class="text-sm text-blue-600 hover:text-blue-700">Edit</button>
+                                                <button class="text-sm text-gray-600 hover:text-gray-700">Delete</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">Smart Fitness Watch</h3>
+                                            <p class="text-sm text-gray-500">Listed 2 weeks ago • ID: #LIST-003</p>
+                                        </div>
+                                        <span class="listing-status status-sold">Sold</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <img src="https://kimi-web-img.moonshot.cn/img/gd-hbimg.huaban.com/f1a3c7c65d579323e0d3b4a43951577d74d83c14" 
+                                             alt="Product" class="w-16 h-16 object-cover rounded-lg opacity-50">
+                                        <div class="ml-4 flex-1">
+                                            <p class="text-gray-600">Advanced fitness tracking with heart rate monitor and GPS</p>
+                                            <p class="text-sm text-gray-500">Views: 156 | Favorites: 8 | Sold for: $199.99</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-semibold text-gray-900 line-through">$199.99</p>
+                                            <div class="flex gap-2 mt-2">
+                                                <button class="text-sm text-blue-600 hover:text-blue-700">Relist</button>
+                                                <button class="text-sm text-gray-600 hover:text-gray-700">Archive</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Create Listing Tab -->
+                    <div class="tab-content" id="create">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Create New Listing</h2>
+                            
+                            <!-- Step Indicators -->
+                            <div class="flex items-center justify-center mb-8">
+                                <div class="flex items-center">
+                                    <div class="step-indicator flex items-center justify-center w-10 h-10 bg-orange-600 text-white rounded-full font-semibold" data-step="1">1</div>
+                                    <div class="step-indicator flex items-center justify-center w-10 h-10 bg-gray-200 text-gray-600 rounded-full font-semibold ml-8" data-step="2">2</div>
+                                    <div class="step-indicator flex items-center justify-center w-10 h-10 bg-gray-200 text-gray-600 rounded-full font-semibold ml-8" data-step="3">3</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 1: Basic Information -->
+                            <div class="listing-wizard active" id="step1">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Basic Information</h3>
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Title *</label>
+                                        <input type="text" id="productTitle" placeholder="Enter a descriptive title for your product" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        <p class="text-sm text-gray-500 mt-1">Be specific and include key features</p>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Category *</label>
+                                            <select id="productCategory" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                                <option value="">Select Category</option>
+                                                <option value="Electronics">Electronics</option>
+                                                <option value="Fashion">Fashion</option>
+                                                <option value="Home">Home & Garden</option>
+                                                <option value="Sports">Sports & Outdoors</option>
+                                                <option value="Books">Books & Media</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Condition *</label>
+                                            <select id="productCondition" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                                <option value="">Select Condition</option>
+                                                <option value="New">New</option>
+                                                <option value="Used - Like New">Used - Like New</option>
+                                                <option value="Used - Good">Used - Good</option>
+                                                <option value="Used - Fair">Used - Fair</option>
+                                                <option value="Refurbished">Refurbished</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                                        <textarea id="productDescription" rows="6" placeholder="Describe your product in detail..." 
+                                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
+                                        <p class="text-sm text-gray-500 mt-1">Include features, specifications, and any defects</p>
+                                    </div>
+                                    
+                                    <div class="flex justify-end">
+                                        <button onclick="nextStep(2)" class="bg-orange-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                            Next Step
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Pricing & Images -->
+                            <div class="listing-wizard" id="step2">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Pricing & Images</h3>
+                                <div class="space-y-6">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Price *</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                                <input type="number" id="productPrice" placeholder="0.00" step="0.01" min="0" 
+                                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                            </div>
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Compare at Price</label>
+                                            <div class="relative">
+                                                <span class="absolute left-3 top-2 text-gray-500">$</span>
+                                                <input type="number" id="comparePrice" placeholder="0.00" step="0.01" min="0" 
+                                                       class="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                            </div>
+                                            <p class="text-sm text-gray-500 mt-1">Optional: Show original price for discounts</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Product Images *</label>
+                                        <div class="image-upload-area" onclick="document.getElementById('imageInput').click()">
+                                            <svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                            <p class="text-gray-600 mb-2">Click to upload or drag and drop</p>
+                                            <p class="text-sm text-gray-500">PNG, JPG up to 10MB each</p>
+                                        </div>
+                                        <input type="file" id="imageInput" multiple accept="image/*" class="hidden">
+                                        <div id="uploadedImages" class="mt-4 flex flex-wrap gap-2"></div>
+                                    </div>
+                                    
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Quantity Available *</label>
+                                            <input type="number" id="productQuantity" placeholder="1" min="1" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">SKU (Optional)</label>
+                                            <input type="text" id="productSKU" placeholder="Enter SKU" 
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between">
+                                        <button onclick="prevStep(1)" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-400 transition-colors">
+                                            Previous
+                                        </button>
+                                        <button onclick="nextStep(3)" class="bg-orange-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                            Next Step
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: Shipping & Publish -->
+                            <div class="listing-wizard" id="step3">
+                                <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping & Publish</h3>
+                                <div class="space-y-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Shipping Options</label>
+                                        <div class="space-y-3">
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="freeShipping" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                                <span class="ml-2 text-sm text-gray-700">Free Shipping</span>
+                                            </label>
+                                            
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="localPickup" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                                <span class="ml-2 text-sm text-gray-700">Local Pickup Available</span>
+                                            </label>
+                                            
+                                            <label class="flex items-center">
+                                                <input type="checkbox" id="expressShipping" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                                <span class="ml-2 text-sm text-gray-700">Express Shipping (+$15.00)</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Processing Time</label>
+                                        <select id="processingTime" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                            <option value="1-2">1-2 business days</option>
+                                            <option value="3-5">3-5 business days</option>
+                                            <option value="1-2 weeks">1-2 weeks</option>
+                                            <option value="2-3 weeks">2-3 weeks</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Tags (Optional)</label>
+                                        <input type="text" id="productTags" placeholder="Enter tags separated by commas" 
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        <p class="text-sm text-gray-500 mt-1">Helps buyers find your product</p>
+                                    </div>
+                                    
+                                    <div class="bg-gray-50 rounded-lg p-4">
+                                        <h4 class="font-medium text-gray-900 mb-2">Listing Summary</h4>
+                                        <div class="text-sm text-gray-600 space-y-1">
+                                            <p>• Listing fee: $0.20</p>
+                                            <p>• Transaction fee: 3.5% + $0.30</p>
+                                            <p>• Payment processing: 2.9% + $0.30</p>
+                                            <p class="font-medium text-gray-900 mt-2">Estimated net: $75.89</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex justify-between">
+                                        <button onclick="prevStep(2)" class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-400 transition-colors">
+                                            Previous
+                                        </button>
+                                        <div class="flex gap-3">
+                                            <button onclick="saveDraft()" class="border border-gray-300 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-50 transition-colors">
+                                                Save Draft
+                                            </button>
+                                            <button onclick="publishListing()" class="bg-orange-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                                Publish Listing
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Orders Tab -->
+                    <div class="tab-content" id="orders">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-semibold text-gray-900">Recent Orders</h2>
+                                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                    <option>All Orders</option>
+                                    <option>Pending</option>
+                                    <option>Processing</option>
+                                    <option>Shipped</option>
+                                    <option>Delivered</option>
+                                </select>
+                            </div>
+                            
+                            <div class="space-y-4">
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">Order #ORD-2024-001</h3>
+                                            <p class="text-sm text-gray-500">Placed 2 hours ago by John D.</p>
+                                        </div>
+                                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-medium">Pending</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/b5ba1f2da291910da8607b9b867272551b3ce702.jpg" 
+                                             alt="Product" class="w-16 h-16 object-cover rounded-lg">
+                                        <div class="ml-4 flex-1">
+                                            <h4 class="font-medium text-gray-900">Wireless Bluetooth Headphones</h4>
+                                            <p class="text-sm text-gray-500">Qty: 1</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-semibold text-gray-900">$79.99</p>
+                                            <div class="flex gap-2 mt-2">
+                                                <button class="text-sm text-blue-600 hover:text-blue-700">Mark as Shipped</button>
+                                                <button class="text-sm text-gray-600 hover:text-gray-700">Contact Buyer</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-3">
+                                        <div>
+                                            <h3 class="font-semibold text-gray-900">Order #ORD-2024-002</h3>
+                                            <p class="text-sm text-gray-500">Placed 1 day ago by Sarah M.</p>
+                                        </div>
+                                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">Shipped</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <img src="https://kimi-web-img.moonshot.cn/img/gd-hbimg.huaban.com/f1a3c7c65d579323e0d3b4a43951577d74d83c14" 
+                                             alt="Product" class="w-16 h-16 object-cover rounded-lg">
+                                        <div class="ml-4 flex-1">
+                                            <h4 class="font-medium text-gray-900">Smart Fitness Watch</h4>
+                                            <p class="text-sm text-gray-500">Qty: 1 • Tracking: 1Z999AA10123456784</p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="font-semibold text-gray-900">$199.99</p>
+                                            <div class="flex gap-2 mt-2">
+                                                <button class="text-sm text-green-600 hover:text-green-700">Add Tracking</button>
+                                                <button class="text-sm text-gray-600 hover:text-gray-700">View Details</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Analytics Tab -->
+                    <div class="tab-content" id="analytics">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Seller Analytics</h2>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Revenue by Month</h3>
+                                    <div id="revenueChart" style="height: 250px;"></div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Top Selling Categories</h3>
+                                    <div id="categoryChart" style="height: 250px;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div class="text-center p-6 bg-gray-50 rounded-lg">
+                                    <p class="text-3xl font-bold text-gray-900 mb-2">4.8</p>
+                                    <p class="text-sm text-gray-600 mb-2">Average Rating</p>
+                                    <div class="flex justify-center text-yellow-400">
+                                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                        <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center p-6 bg-gray-50 rounded-lg">
+                                    <p class="text-3xl font-bold text-gray-900 mb-2">98%</p>
+                                    <p class="text-sm text-gray-600">On-Time Shipping</p>
+                                </div>
+                                
+                                <div class="text-center p-6 bg-gray-50 rounded-lg">
+                                    <p class="text-3xl font-bold text-gray-900 mb-2">156</p>
+                                    <p class="text-sm text-gray-600">Positive Reviews</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Tab -->
+                    <div class="tab-content" id="settings">
+                        <div class="bg-white rounded-lg shadow-md p-6">
+                            <h2 class="text-xl font-semibold text-gray-900 mb-6">Store Settings</h2>
+                            
+                            <div class="space-y-6">
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Store Information</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Store Name</label>
+                                            <input type="text" value="TechHub Store" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        </div>
+                                        
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-2">Business Email</label>
+                                            <input type="email" value="seller@techhub.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">Store Description</label>
+                                        <textarea rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+Premium electronics and gadgets store offering the latest technology products with excellent customer service and fast shipping.
+                                        </textarea>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Shipping Settings</h3>
+                                    <div class="space-y-4">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" checked class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                            <span class="ml-2 text-sm text-gray-700">Offer free shipping on orders over $50</span>
+                                        </label>
+                                        
+                                        <label class="flex items-center">
+                                            <input type="checkbox" checked class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                            <span class="ml-2 text-sm text-gray-700">Allow local pickup</span>
+                                        </label>
+                                        
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                            <span class="ml-2 text-sm text-gray-700">Offer international shipping</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Notification Preferences</h3>
+                                    <div class="space-y-4">
+                                        <label class="flex items-center">
+                                            <input type="checkbox" checked class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                            <span class="ml-2 text-sm text-gray-700">Email notifications for new orders</span>
+                                        </label>
+                                        
+                                        <label class="flex items-center">
+                                            <input type="checkbox" checked class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                            <span class="ml-2 text-sm text-gray-700">SMS notifications for urgent matters</span>
+                                        </label>
+                                        
+                                        <label class="flex items-center">
+                                            <input type="checkbox" class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                            <span class="ml-2 text-sm text-gray-700">Weekly performance reports</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="flex justify-end">
+                                    <button class="bg-orange-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">
+                © 2024 Urban Marketplace. All rights reserved. Built with trust and security.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Tab switching functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.dataset.tab;
+                    
+                    // Update active tab button
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('bg-orange-600', 'text-white');
+                        btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                    });
+                    this.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                    this.classList.add('bg-orange-600', 'text-white');
+                    
+                    // Update active tab content
+                    tabContents.forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Initialize charts if analytics tab is selected
+                    if (tabId === 'analytics') {
+                        initializeCharts();
+                    }
+                });
+            });
+            
+            // Image upload functionality
+            setupImageUpload();
+        });
+        
+        // Listing wizard functionality
+        function nextStep(step) {
+            // Hide current step
+            document.querySelectorAll('.listing-wizard').forEach(wizard => {
+                wizard.classList.remove('active');
+            });
+            
+            // Show next step
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Update step indicators
+            updateStepIndicators(step);
+        }
+        
+        function prevStep(step) {
+            // Hide current step
+            document.querySelectorAll('.listing-wizard').forEach(wizard => {
+                wizard.classList.remove('active');
+            });
+            
+            // Show previous step
+            document.getElementById(`step${step}`).classList.add('active');
+            
+            // Update step indicators
+            updateStepIndicators(step);
+        }
+        
+        function updateStepIndicators(currentStep) {
+            document.querySelectorAll('.step-indicator').forEach((indicator, index) => {
+                const stepNumber = index + 1;
+                if (stepNumber < currentStep) {
+                    indicator.classList.add('completed');
+                    indicator.classList.remove('bg-gray-200', 'text-gray-600');
+                    indicator.classList.add('bg-green-500', 'text-white');
+                } else if (stepNumber === currentStep) {
+                    indicator.classList.remove('bg-gray-200', 'text-gray-600', 'completed');
+                    indicator.classList.add('bg-orange-600', 'text-white');
+                } else {
+                    indicator.classList.remove('bg-green-500', 'bg-orange-600', 'text-white', 'completed');
+                    indicator.classList.add('bg-gray-200', 'text-gray-600');
+                }
+            });
+        }
+        
+        function showCreateListing() {
+            // Switch to create tab
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('bg-orange-600', 'text-white');
+                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+            });
+            
+            const createTab = document.querySelector('[data-tab="create"]');
+            createTab.classList.remove('text-gray-700', 'hover:bg-gray-100');
+            createTab.classList.add('bg-orange-600', 'text-white');
+            
+            // Show create content
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.getElementById('create').classList.add('active');
+            
+            // Reset wizard to step 1
+            document.querySelectorAll('.listing-wizard').forEach(wizard => {
+                wizard.classList.remove('active');
+            });
+            document.getElementById('step1').classList.add('active');
+            updateStepIndicators(1);
+        }
+        
+        function setupImageUpload() {
+            const imageInput = document.getElementById('imageInput');
+            const uploadedImages = document.getElementById('uploadedImages');
+            
+            imageInput.addEventListener('change', function(e) {
+                const files = Array.from(e.target.files);
+                
+                files.forEach(file => {
+                    if (file.type.startsWith('image/')) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            const imageDiv = document.createElement('div');
+                            imageDiv.className = 'uploaded-image';
+                            imageDiv.innerHTML = `
+                                <img src="${e.target.result}" alt="Uploaded">
+                                <button class="remove-image" onclick="removeImage(this)">×</button>
+                            `;
+                            uploadedImages.appendChild(imageDiv);
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+        }
+        
+        function removeImage(button) {
+            button.parentElement.remove();
+        }
+        
+        function saveDraft() {
+            showNotification('Draft saved successfully!', 'success');
+        }
+        
+        function publishListing() {
+            // Validate required fields
+            const title = document.getElementById('productTitle').value;
+            const category = document.getElementById('productCategory').value;
+            const condition = document.getElementById('productCondition').value;
+            const description = document.getElementById('productDescription').value;
+            const price = document.getElementById('productPrice').value;
+            const quantity = document.getElementById('productQuantity').value;
+            
+            if (!title || !category || !condition || !description || !price || !quantity) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            showNotification('Listing published successfully!', 'success');
+            
+            // Switch to listings tab
+            setTimeout(() => {
+                document.querySelector('[data-tab="listings"]').click();
+            }, 2000);
+        }
+        
+        function initializeCharts() {
+            if (typeof echarts !== 'undefined') {
+                // Performance Chart
+                const performanceChart = echarts.init(document.getElementById('performanceChart'));
+                const performanceOption = {
+                    tooltip: { trigger: 'axis' },
+                    xAxis: { type: 'category', data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+                    yAxis: { type: 'value' },
+                    series: [{
+                        data: [120, 200, 150, 80, 70, 110],
+                        type: 'line',
+                        smooth: true,
+                        itemStyle: { color: '#f97316' },
+                        areaStyle: { color: 'rgba(249, 115, 22, 0.1)' }
+                    }]
+                };
+                performanceChart.setOption(performanceOption);
+                
+                // Revenue Chart
+                const revenueChart = echarts.init(document.getElementById('revenueChart'));
+                const revenueOption = {
+                    tooltip: { trigger: 'axis' },
+                    xAxis: { type: 'category', data: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'] },
+                    yAxis: { type: 'value' },
+                    series: [{
+                        data: [845, 1200, 980, 1100, 1300, 1247],
+                        type: 'bar',
+                        itemStyle: { color: '#10b981' }
+                    }]
+                };
+                revenueChart.setOption(revenueOption);
+                
+                // Category Chart
+                const categoryChart = echarts.init(document.getElementById('categoryChart'));
+                const categoryOption = {
+                    tooltip: { trigger: 'item' },
+                    series: [{
+                        type: 'pie',
+                        radius: '70%',
+                        data: [
+                            { value: 45, name: 'Electronics' },
+                            { value: 30, name: 'Fashion' },
+                            { value: 15, name: 'Home' },
+                            { value: 10, name: 'Sports' }
+                        ],
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }]
+                };
+                categoryChart.setOption(categoryOption);
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: notification,
+                    translateX: [300, 0],
+                    opacity: [0, 1],
+                    duration: 300,
+                    easing: 'easeOutQuart'
+                });
+            }
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (typeof anime !== 'undefined') {
+                    anime({
+                        targets: notification,
+                        translateX: [0, 300],
+                        opacity: [1, 0],
+                        duration: 300,
+                        easing: 'easeInQuart',
+                        complete: () => notification.remove()
+                    });
+                } else {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>

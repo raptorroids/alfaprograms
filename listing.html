@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Urban Marketplace</title>
+    <meta name="description" content="View detailed product information, seller ratings, and purchase options on Urban Marketplace.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .product-gallery {
+            position: relative;
+        }
+        
+        .gallery-thumbnail {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .gallery-thumbnail.active {
+            border-color: #f97316;
+        }
+        
+        .gallery-thumbnail:hover {
+            border-color: #f97316;
+        }
+        
+        .quantity-input {
+            -moz-appearance: textfield;
+        }
+        
+        .quantity-input::-webkit-outer-spin-button,
+        .quantity-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        .seller-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .review-card {
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .review-card:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+        
+        .related-product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .related-product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .breadcrumb a {
+            color: #f97316;
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .share-dropdown {
+            position: relative;
+        }
+        
+        .share-dropdown-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 50;
+            display: none;
+            min-width: 200px;
+        }
+        
+        .share-dropdown.active .share-dropdown-content {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="resources/hero/marketplace-logo.png" alt="Urban Marketplace" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-900">Urban Marketplace</span>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Home</a>
+                    <a href="browse.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Browse</a>
+                    <a href="sell.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Sell</a>
+                    <a href="profile.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Profile</a>
+                    
+                    <!-- Cart -->
+                    <div class="relative">
+                        <a href="cart.html" class="text-gray-700 hover:text-orange-600 transition-colors">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9"></path>
+                            </svg>
+                            <span class="cart-count hidden">0</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-orange-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <section class="bg-white py-4 border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav class="breadcrumb">
+                <a href="index.html">Home</a>
+                <span>></span>
+                <a href="browse.html">Browse</a>
+                <span>></span>
+                <a href="browse.html?category=Electronics">Electronics</a>
+                <span>></span>
+                <span id="productBreadcrumb">Wireless Bluetooth Headphones</span>
+            </nav>
+        </div>
+    </section>
+
+    <!-- Product Details -->
+    <section class="py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- Product Images -->
+                <div class="product-gallery">
+                    <div class="mb-4">
+                        <img id="mainImage" src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/b5ba1f2da291910da8607b9b867272551b3ce702.jpg" 
+                             alt="Product" class="w-full h-96 object-cover rounded-lg">
+                    </div>
+                    
+                    <div class="grid grid-cols-4 gap-2">
+                        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/b5ba1f2da291910da8607b9b867272551b3ce702.jpg" 
+                             alt="View 1" class="gallery-thumbnail active w-full h-20 object-cover rounded-lg cursor-pointer"
+                             onclick="changeMainImage(this.src)">
+                        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/50cb312615df5589b1a0a0bedffc53f01f31610e.jpg" 
+                             alt="View 2" class="gallery-thumbnail w-full h-20 object-cover rounded-lg cursor-pointer"
+                             onclick="changeMainImage(this.src)">
+                        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/b5ba1f2da291910da8607b9b867272551b3ce702.jpg" 
+                             alt="View 3" class="gallery-thumbnail w-full h-20 object-cover rounded-lg cursor-pointer"
+                             onclick="changeMainImage(this.src)">
+                        <img src="https://kimi-web-img.moonshot.cn/img/img.freepik.com/50cb312615df5589b1a0a0bedffc53f01f31610e.jpg" 
+                             alt="View 4" class="gallery-thumbnail w-full h-20 object-cover rounded-lg cursor-pointer"
+                             onclick="changeMainImage(this.src)">
+                    </div>
+                </div>
+                
+                <!-- Product Info -->
+                <div>
+                    <div class="mb-6">
+                        <h1 id="productTitle" class="text-3xl font-bold text-gray-900 mb-2">Wireless Bluetooth Headphones</h1>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400 mr-2">
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                    <svg class="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>
+                                </div>
+                                <span class="text-sm text-gray-600">4.5 (128 reviews)</span>
+                            </div>
+                            <span class="text-sm text-gray-500">•</span>
+                            <span class="text-sm text-gray-600">156 sold</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <div class="flex items-baseline gap-2 mb-4">
+                            <span id="productPrice" class="text-4xl font-bold text-orange-600">$79.99</span>
+                            <span class="text-lg text-gray-500 line-through">$129.99</span>
+                            <span class="text-sm bg-red-100 text-red-800 px-2 py-1 rounded-full font-medium">38% OFF</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 mb-4">
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">In Stock</span>
+                            <span class="text-sm text-gray-600">Free Shipping</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Product Description -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Description</h3>
+                        <p id="productDescription" class="text-gray-600 leading-relaxed">
+                            Premium noise-cancelling wireless headphones with 30-hour battery life. Experience crystal-clear audio with advanced Bluetooth 5.0 technology. 
+                            Features include active noise cancellation, comfortable over-ear design, and quick charge capability. Perfect for music lovers, 
+                            commuters, and professionals who demand high-quality audio on the go.
+                        </p>
+                    </div>
+                    
+                    <!-- Product Specifications -->
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-3">Specifications</h3>
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <dt class="font-medium text-gray-900">Brand:</dt>
+                                    <dd class="text-gray-600">TechHub Store</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-900">Model:</dt>
+                                    <dd class="text-gray-600">TH-WBH-2024</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-900">Connectivity:</dt>
+                                    <dd class="text-gray-600">Bluetooth 5.0</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-900">Battery Life:</dt>
+                                    <dd class="text-gray-600">30 hours</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-900">Charging Time:</dt>
+                                    <dd class="text-gray-600">2 hours</dd>
+                                </div>
+                                <div>
+                                    <dt class="font-medium text-gray-900">Weight:</dt>
+                                    <dd class="text-gray-600">250g</dd>
+                                </div>
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    <!-- Purchase Options -->
+                    <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                        <div class="flex items-center gap-4 mb-4">
+                            <label class="text-sm font-medium text-gray-700">Quantity:</label>
+                            <div class="flex items-center border border-gray-300 rounded-lg">
+                                <button class="px-3 py-2 hover:bg-gray-100" onclick="changeQuantity(-1)">-</button>
+                                <input type="number" id="quantity" value="1" min="1" max="10" 
+                                       class="quantity-input w-16 text-center border-0 focus:ring-0">
+                                <button class="px-3 py-2 hover:bg-gray-100" onclick="changeQuantity(1)">+</button>
+                            </div>
+                            <span class="text-sm text-gray-600">Available: 15</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button class="bg-orange-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-orange-700 transition-colors" 
+                                    data-action="add-to-cart" data-product-id="1">
+                                Add to Cart
+                            </button>
+                            <button class="bg-gray-900 text-white py-3 px-6 rounded-lg font-semibold hover:bg-gray-800 transition-colors" 
+                                    onclick="showNotification('Buy Now functionality coming soon!', 'info')">
+                                Buy Now
+                            </button>
+                        </div>
+                        
+                        <div class="flex justify-center gap-4 mt-4">
+                            <button class="flex items-center gap-2 text-gray-600 hover:text-orange-600" 
+                                    data-action="add-to-watchlist" data-product-id="1">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                                </svg>
+                                Add to Watchlist
+                            </button>
+                            
+                            <div class="share-dropdown">
+                                <button class="flex items-center gap-2 text-gray-600 hover:text-orange-600" onclick="toggleShareDropdown()">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"></path>
+                                    </svg>
+                                    Share
+                                </button>
+                                <div class="share-dropdown-content">
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="shareProduct('facebook')">
+                                        Facebook
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="shareProduct('twitter')">
+                                        Twitter
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="shareProduct('email')">
+                                        Email
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="copyLink()">
+                                        Copy Link
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Seller Information -->
+    <section class="py-8 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-gray-50 rounded-lg p-6">
+                <div class="flex items-start gap-4">
+                    <div class="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center">
+                        <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div class="flex items-center justify-between mb-2">
+                            <h3 class="text-lg font-semibold text-gray-900">TechHub Store</h3>
+                            <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">Verified Seller</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                            <div>
+                                <p class="text-sm text-gray-600">Rating</p>
+                                <p class="font-semibold text-gray-900">4.8 ⭐</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Total Sales</p>
+                                <p class="font-semibold text-gray-900">1,247</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Member Since</p>
+                                <p class="font-semibold text-gray-900">2022</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-600">Response Time</p>
+                                <p class="font-semibold text-gray-900">&lt; 1 hour</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-wrap gap-3">
+                            <button class="bg-orange-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-orange-700 transition-colors">
+                                Contact Seller
+                            </button>
+                            <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                                View Store
+                            </button>
+                            <button class="border border-gray-300 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors">
+                                Follow Store
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Reviews Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Customer Reviews</h2>
+                        
+                        <div class="text-center mb-6">
+                            <div class="text-4xl font-bold text-gray-900 mb-2">4.5</div>
+                            <div class="flex justify-center text-yellow-400 mb-2">
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-6 h-6 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>
+                            </div>
+                            <p class="text-sm text-gray-600">Based on 128 reviews</p>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 w-8">5⭐</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 65%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 w-8">83</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 w-8">4⭐</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 25%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 w-8">32</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 w-8">3⭐</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 7%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 w-8">9</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 w-8">2⭐</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 2%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 w-8">3</span>
+                            </div>
+                            
+                            <div class="flex items-center">
+                                <span class="text-sm text-gray-600 w-8">1⭐</span>
+                                <div class="flex-1 bg-gray-200 rounded-full h-2 mx-3">
+                                    <div class="bg-yellow-400 h-2 rounded-full" style="width: 1%"></div>
+                                </div>
+                                <span class="text-sm text-gray-600 w-8">1</span>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-6 bg-orange-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-orange-700 transition-colors">
+                            Write a Review
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Individual Reviews -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-lg shadow-md p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-xl font-semibold text-gray-900">Recent Reviews</h2>
+                            <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                                <option>Most Recent</option>
+                                <option>Most Helpful</option>
+                                <option>Highest Rated</option>
+                                <option>Lowest Rated</option>
+                            </select>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <div class="review-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-medium text-gray-600">JD</span>
+                                    </div>
+                                    
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <h4 class="font-medium text-gray-900">John D.</h4>
+                                            <span class="text-sm text-gray-500">2 days ago</span>
+                                        </div>
+                                        
+                                        <div class="flex text-yellow-400 mb-2">
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                        </div>
+                                        
+                                        <p class="text-gray-700 mb-2">
+                                            Amazing sound quality! The noise cancellation is incredible and the battery life easily lasts me through my entire work week. 
+                                            Very comfortable to wear for long periods. Highly recommend!
+                                        </p>
+                                        
+                                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                                            <button class="hover:text-orange-600">Helpful (12)</button>
+                                            <button class="hover:text-orange-600">Report</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="review-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-medium text-gray-600">SM</span>
+                                    </div>
+                                    
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <h4 class="font-medium text-gray-900">Sarah M.</h4>
+                                            <span class="text-sm text-gray-500">1 week ago</span>
+                                        </div>
+                                        
+                                        <div class="flex text-yellow-400 mb-2">
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>
+                                        </div>
+                                        
+                                        <p class="text-gray-700 mb-2">
+                                            Good headphones for the price. Sound quality is decent and they connect easily to my devices. 
+                                            The only downside is that they feel a bit heavy after wearing them for several hours.
+                                        </p>
+                                        
+                                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                                            <button class="hover:text-orange-600">Helpful (8)</button>
+                                            <button class="hover:text-orange-600">Report</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="review-card">
+                                <div class="flex items-start gap-4">
+                                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <span class="text-sm font-medium text-gray-600">MR</span>
+                                    </div>
+                                    
+                                    <div class="flex-1">
+                                        <div class="flex items-center justify-between mb-1">
+                                            <h4 class="font-medium text-gray-900">Mike R.</h4>
+                                            <span class="text-sm text-gray-500">2 weeks ago</span>
+                                        </div>
+                                        
+                                        <div class="flex text-yellow-400 mb-2">
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                            <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                        </div>
+                                        
+                                        <p class="text-gray-700 mb-2">
+                                            Excellent product! Fast shipping and great packaging. The headphones exceeded my expectations 
+                                            in terms of sound quality and build. Would definitely buy from this seller again.
+                                        </p>
+                                        
+                                        <div class="flex items-center gap-4 text-sm text-gray-500">
+                                            <button class="hover:text-orange-600">Helpful (15)</button>
+                                            <button class="hover:text-orange-600">Report</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button class="w-full mt-6 border border-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-50 transition-colors">
+                            Load More Reviews
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Products -->
+    <section class="py-12 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-8">You Might Also Like</h2>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="related-product-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="https://kimi-web-img.moonshot.cn/img/gd-hbimg.huaban.com/f1a3c7c65d579323e0d3b4a43951577d74d83c14" 
+                         alt="Smart Watch" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">Smart Fitness Watch</h3>
+                        <p class="text-orange-600 font-bold text-lg">$199.99</p>
+                        <div class="flex items-center mt-2">
+                            <div class="flex text-yellow-400">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>
+                            </div>
+                            <span class="text-gray-500 text-sm ml-1">(89)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="related-product-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="https://kimi-web-img.moonshot.cn/img/m.media-amazon.com/92721342ccc503ecd9b768f0b242a46f703d4564.jpg" 
+                         alt="Wireless Earbuds" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">Wireless Earbuds Pro</h3>
+                        <p class="text-orange-600 font-bold text-lg">$159.99</p>
+                        <div class="flex items-center mt-2">
+                            <div class="flex text-yellow-400">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            </div>
+                            <span class="text-gray-500 text-sm ml-1">(234)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="related-product-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="https://kimi-web-img.moonshot.cn/img/giftone.com.hk/e15ace28ec74cb0e7108fd33047a59cd544af97f.jpg" 
+                         alt="Gaming Mouse" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">Wireless Gaming Mouse</h3>
+                        <p class="text-orange-600 font-bold text-lg">$89.99</p>
+                        <div class="flex items-center mt-2">
+                            <div class="flex text-yellow-400">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                            </div>
+                            <span class="text-gray-500 text-sm ml-1">(203)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="related-product-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <img src="https://kimi-web-img.moonshot.cn/img/cdn.thewirecutter.com/c163fa4d63f19d07d4073ac46e55342e113d79ba.jpg" 
+                         alt="Table Lamp" class="w-full h-48 object-cover">
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2">Modern Table Lamp</h3>
+                        <p class="text-orange-600 font-bold text-lg">$69.99</p>
+                        <div class="flex items-center mt-2">
+                            <div class="flex text-yellow-400">
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>
+                                <svg class="w-4 h-4 text-gray-300 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>
+                            </div>
+                            <span class="text-gray-500 text-sm ml-1">(67)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">
+                © 2024 Urban Marketplace. All rights reserved. Built with trust and security.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Product gallery functionality
+        function changeMainImage(src) {
+            document.getElementById('mainImage').src = src;
+            
+            // Update active thumbnail
+            document.querySelectorAll('.gallery-thumbnail').forEach(thumb => {
+                thumb.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+        
+        // Quantity controls
+        function changeQuantity(change) {
+            const quantityInput = document.getElementById('quantity');
+            let currentValue = parseInt(quantityInput.value);
+            let newValue = currentValue + change;
+            
+            if (newValue >= 1 && newValue <= 10) {
+                quantityInput.value = newValue;
+                
+                // Update price display
+                const basePrice = 79.99;
+                const totalPrice = basePrice * newValue;
+                document.getElementById('productPrice').textContent = `$${totalPrice.toFixed(2)}`;
+            }
+        }
+        
+        // Share functionality
+        function toggleShareDropdown() {
+            document.querySelector('.share-dropdown').classList.toggle('active');
+        }
+        
+        function shareProduct(platform) {
+            const url = window.location.href;
+            const title = document.getElementById('productTitle').textContent;
+            
+            switch (platform) {
+                case 'facebook':
+                    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+                    break;
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`);
+                    break;
+                case 'email':
+                    window.location.href = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`;
+                    break;
+            }
+            
+            toggleShareDropdown();
+        }
+        
+        function copyLink() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showNotification('Link copied to clipboard!', 'success');
+            });
+            toggleShareDropdown();
+        }
+        
+        // Load product data based on URL parameter
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            if (productId && window.marketplace) {
+                const product = window.marketplace.products.find(p => p.id == productId);
+                if (product) {
+                    updateProductDisplay(product);
+                }
+            }
+        });
+        
+        function updateProductDisplay(product) {
+            document.getElementById('productTitle').textContent = product.name;
+            document.getElementById('productPrice').textContent = `$${product.price}`;
+            document.getElementById('productDescription').textContent = product.description;
+            document.getElementById('productBreadcrumb').textContent = product.name;
+            document.getElementById('mainImage').src = product.image;
+            
+            // Update breadcrumb category
+            const breadcrumbLinks = document.querySelectorAll('.breadcrumb a');
+            if (breadcrumbLinks.length >= 3) {
+                breadcrumbLinks[2].textContent = product.category;
+                breadcrumbLinks[2].href = `browse.html?category=${encodeURIComponent(product.category)}`;
+            }
+        }
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: notification,
+                    translateX: [300, 0],
+                    opacity: [0, 1],
+                    duration: 300,
+                    easing: 'easeOutQuart'
+                });
+            }
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (typeof anime !== 'undefined') {
+                    anime({
+                        targets: notification,
+                        translateX: [0, 300],
+                        opacity: [1, 0],
+                        duration: 300,
+                        easing: 'easeInQuart',
+                        complete: () => notification.remove()
+                    });
+                } else {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.share-dropdown')) {
+                document.querySelector('.share-dropdown').classList.remove('active');
+            }
+        });
+        
+        // Initialize quantity input change listener
+        document.getElementById('quantity').addEventListener('change', function() {
+            const quantity = parseInt(this.value);
+            const basePrice = 79.99;
+            const totalPrice = basePrice * quantity;
+            document.getElementById('productPrice').textContent = `$${totalPrice.toFixed(2)}`;
+        });
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>

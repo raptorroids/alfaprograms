@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Products - Urban Marketplace</title>
+    <meta name="description" content="Browse thousands of products on Urban Marketplace. Find electronics, fashion, home goods, and more from verified sellers.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+        
+        .filter-sidebar {
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 5rem;
+            max-height: calc(100vh - 6rem);
+            overflow-y: auto;
+        }
+        
+        .price-range-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e5e7eb;
+            outline: none;
+        }
+        
+        .price-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+        }
+        
+        .price-range-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .line-clamp-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .view-toggle.active {
+            background-color: #f97316;
+            color: white;
+        }
+        
+        .sort-dropdown {
+            position: relative;
+        }
+        
+        .sort-dropdown-content {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            z-index: 50;
+            display: none;
+            min-width: 200px;
+        }
+        
+        .sort-dropdown.active .sort-dropdown-content {
+            display: block;
+        }
+        
+        .filter-tag {
+            background-color: #f97316;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .mobile-filters {
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+        
+        .mobile-filters.active {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
+                <div class="flex items-center">
+                    <img src="resources/hero/marketplace-logo.png" alt="Urban Marketplace" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-900">Urban Marketplace</span>
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-lg mx-8">
+                    <div class="search-container w-full">
+                        <div class="relative">
+                            <input type="text" placeholder="Search products..." 
+                                   class="search-input w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="search-suggestions"></div>
+                    </div>
+                </div>
+                
+                <!-- Navigation Links -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Home</a>
+                    <a href="sell.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Sell</a>
+                    <a href="profile.html" class="text-gray-700 hover:text-orange-600 font-medium transition-colors">Profile</a>
+                    
+                    <!-- Cart -->
+                    <div class="relative">
+                        <a href="cart.html" class="text-gray-700 hover:text-orange-600 transition-colors">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-1.5 6M7 13l-1.5 6m0 0h9m-9 0h9"></path>
+                            </svg>
+                            <span class="cart-count hidden">0</span>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden">
+                    <button class="text-gray-700 hover:text-orange-600" onclick="toggleMobileFilters()">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="bg-white py-8 border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Browse Products</h1>
+                    <p class="text-gray-600 mt-1">Discover amazing products from verified sellers</p>
+                </div>
+                
+                <!-- Active Filters -->
+                <div class="flex flex-wrap gap-2" id="activeFilters">
+                    <!-- Active filters will be displayed here -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex gap-8">
+                <!-- Desktop Filters Sidebar -->
+                <div class="hidden lg:block w-80">
+                    <div class="filter-sidebar p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                            <button class="text-sm text-orange-600 hover:text-orange-700" onclick="clearAllFilters()">
+                                Clear All
+                            </button>
+                        </div>
+                        
+                        <!-- Categories -->
+                        <div class="mb-8">
+                            <h3 class="font-semibold text-gray-900 mb-4">Categories</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="category-checkbox" value="Electronics" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Electronics</span>
+                                    <span class="ml-auto text-xs text-gray-500">(6)</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="category-checkbox" value="Fashion" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Fashion</span>
+                                    <span class="ml-auto text-xs text-gray-500">(5)</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="category-checkbox" value="Home" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Home & Garden</span>
+                                    <span class="ml-auto text-xs text-gray-500">(4)</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Price Range -->
+                        <div class="mb-8">
+                            <h3 class="font-semibold text-gray-900 mb-4">Price Range</h3>
+                            <div class="space-y-4">
+                                <input type="range" id="priceRange" min="0" max="500" value="500" 
+                                       class="price-range-slider">
+                                <div class="flex justify-between text-sm text-gray-600">
+                                    <span>$0</span>
+                                    <span id="priceValue">$500</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Condition -->
+                        <div class="mb-8">
+                            <h3 class="font-semibold text-gray-900 mb-4">Condition</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="condition-checkbox" value="New" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">New</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="condition-checkbox" value="Used" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Used</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="condition-checkbox" value="Refurbished" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Refurbished</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Seller Rating -->
+                        <div class="mb-8">
+                            <h3 class="font-semibold text-gray-900 mb-4">Seller Rating</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="rating" value="4" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">⭐ 4+ Stars</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="radio" name="rating" value="3" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">⭐ 3+ Stars</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="radio" name="rating" value="2" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">⭐ 2+ Stars</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Shipping -->
+                        <div class="mb-8">
+                            <h3 class="font-semibold text-gray-900 mb-4">Shipping</h3>
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="shipping-checkbox" value="free" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Free Shipping</span>
+                                </label>
+                                
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="shipping-checkbox" value="express" 
+                                           class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                                    <span class="ml-2 text-sm text-gray-700">Express Delivery</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Products Grid -->
+                <div class="flex-1">
+                    <!-- Toolbar -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 mb-6">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            <div class="flex items-center gap-4">
+                                <span class="text-sm text-gray-600" id="productCount">Showing 15 products</span>
+                                
+                                <!-- View Toggle -->
+                                <div class="flex border border-gray-300 rounded-lg overflow-hidden">
+                                    <button class="view-toggle active px-3 py-1 text-sm" data-view="grid">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                                        </svg>
+                                    </button>
+                                    <button class="view-toggle px-3 py-1 text-sm" data-view="list">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Sort Dropdown -->
+                            <div class="sort-dropdown">
+                                <button class="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-sm hover:bg-gray-50" 
+                                        onclick="toggleSortDropdown()">
+                                    <span>Sort by: Relevance</span>
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
+                                <div class="sort-dropdown-content">
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="sortProducts('relevance')">
+                                        Relevance
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="sortProducts('price-low')">
+                                        Price: Low to High
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="sortProducts('price-high')">
+                                        Price: High to Low
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="sortProducts('newest')">
+                                        Newest First
+                                    </button>
+                                    <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" onclick="sortProducts('rating')">
+                                        Highest Rated
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Products Grid -->
+                    <div class="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Products will be dynamically loaded here -->
+                    </div>
+                    
+                    <!-- Load More Button -->
+                    <div class="text-center mt-12">
+                        <button class="load-more bg-orange-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors">
+                            Load More Products
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mobile Filters Overlay -->
+    <div class="mobile-filters fixed inset-0 z-50 lg:hidden">
+        <div class="absolute inset-0 bg-black bg-opacity-50" onclick="toggleMobileFilters()"></div>
+        <div class="absolute left-0 top-0 h-full w-80 bg-white p-6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-semibold text-gray-900">Filters</h2>
+                <button onclick="toggleMobileFilters()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile filter content (same as desktop) -->
+            <div class="space-y-6">
+                <!-- Categories -->
+                <div>
+                    <h3 class="font-semibold text-gray-900 mb-4">Categories</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mobile-category-checkbox" value="Electronics" 
+                                   class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Electronics</span>
+                        </label>
+                        
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mobile-category-checkbox" value="Fashion" 
+                                   class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Fashion</span>
+                        </label>
+                        
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mobile-category-checkbox" value="Home" 
+                                   class="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded">
+                            <span class="ml-2 text-sm text-gray-700">Home & Garden</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <!-- Price Range -->
+                <div>
+                    <h3 class="font-semibold text-gray-900 mb-4">Price Range</h3>
+                    <div class="space-y-4">
+                        <input type="range" class="mobile-price-range" min="0" max="500" value="500" 
+                               class="price-range-slider">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>$0</span>
+                            <span class="mobile-price-value">$500</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Apply Filters Button -->
+                <button onclick="applyMobileFilters()" class="w-full bg-orange-600 text-white py-3 rounded-lg font-semibold hover:bg-orange-700 transition-colors">
+                    Apply Filters
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-400">
+                © 2024 Urban Marketplace. All rights reserved. Built with trust and security.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Filter and search functionality
+        let currentFilters = {
+            categories: [],
+            priceMax: 500,
+            conditions: [],
+            rating: null,
+            shipping: [],
+            search: '',
+            sort: 'relevance'
+        };
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProducts();
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Search input
+            const searchInput = document.querySelector('.search-input');
+            if (searchInput) {
+                searchInput.addEventListener('input', function(e) {
+                    currentFilters.search = e.target.value;
+                    loadProducts();
+                });
+            }
+            
+            // Category checkboxes
+            document.querySelectorAll('.category-checkbox, .mobile-category-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateCategoryFilters();
+                    loadProducts();
+                });
+            });
+            
+            // Price range
+            const priceRange = document.getElementById('priceRange');
+            const mobilePriceRange = document.querySelector('.mobile-price-range');
+            
+            if (priceRange) {
+                priceRange.addEventListener('input', function(e) {
+                    currentFilters.priceMax = parseInt(e.target.value);
+                    document.getElementById('priceValue').textContent = `$${currentFilters.priceMax}`;
+                    loadProducts();
+                });
+            }
+            
+            if (mobilePriceRange) {
+                mobilePriceRange.addEventListener('input', function(e) {
+                    document.querySelector('.mobile-price-value').textContent = `$${e.target.value}`;
+                });
+            }
+            
+            // Condition checkboxes
+            document.querySelectorAll('.condition-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateConditionFilters();
+                    loadProducts();
+                });
+            });
+            
+            // Rating radio buttons
+            document.querySelectorAll('input[name="rating"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    currentFilters.rating = this.value;
+                    loadProducts();
+                });
+            });
+            
+            // Shipping checkboxes
+            document.querySelectorAll('.shipping-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateShippingFilters();
+                    loadProducts();
+                });
+            });
+            
+            // View toggle
+            document.querySelectorAll('.view-toggle').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.view-toggle').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    // View change logic would go here
+                });
+            });
+        }
+        
+        function updateCategoryFilters() {
+            currentFilters.categories = Array.from(document.querySelectorAll('.category-checkbox:checked, .mobile-category-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            updateActiveFilters();
+        }
+        
+        function updateConditionFilters() {
+            currentFilters.conditions = Array.from(document.querySelectorAll('.condition-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            updateActiveFilters();
+        }
+        
+        function updateShippingFilters() {
+            currentFilters.shipping = Array.from(document.querySelectorAll('.shipping-checkbox:checked'))
+                .map(checkbox => checkbox.value);
+            updateActiveFilters();
+        }
+        
+        function updateActiveFilters() {
+            const container = document.getElementById('activeFilters');
+            container.innerHTML = '';
+            
+            // Add category filters
+            currentFilters.categories.forEach(category => {
+                addFilterTag(container, category, 'category');
+            });
+            
+            // Add price filter
+            if (currentFilters.priceMax < 500) {
+                addFilterTag(container, `Under $${currentFilters.priceMax}`, 'price');
+            }
+            
+            // Add condition filters
+            currentFilters.conditions.forEach(condition => {
+                addFilterTag(container, condition, 'condition');
+            });
+            
+            // Add rating filter
+            if (currentFilters.rating) {
+                addFilterTag(container, `${currentFilters.rating}+ Stars`, 'rating');
+            }
+        }
+        
+        function addFilterTag(container, text, type) {
+            const tag = document.createElement('span');
+            tag.className = 'filter-tag';
+            tag.innerHTML = `
+                ${text}
+                <button onclick="removeFilter('${type}', '${text}')" class="ml-1 hover:text-red-200">
+                    ×
+                </button>
+            `;
+            container.appendChild(tag);
+        }
+        
+        function removeFilter(type, value) {
+            switch (type) {
+                case 'category':
+                    currentFilters.categories = currentFilters.categories.filter(c => c !== value);
+                    document.querySelectorAll(`.category-checkbox[value="${value}"]`).forEach(cb => cb.checked = false);
+                    break;
+                case 'price':
+                    currentFilters.priceMax = 500;
+                    document.getElementById('priceRange').value = 500;
+                    document.getElementById('priceValue').textContent = '$500';
+                    break;
+                case 'condition':
+                    currentFilters.conditions = currentFilters.conditions.filter(c => c !== value);
+                    document.querySelectorAll(`.condition-checkbox[value="${value}"]`).forEach(cb => cb.checked = false);
+                    break;
+                case 'rating':
+                    currentFilters.rating = null;
+                    document.querySelectorAll('input[name="rating"]').forEach(radio => radio.checked = false);
+                    break;
+            }
+            updateActiveFilters();
+            loadProducts();
+        }
+        
+        function clearAllFilters() {
+            currentFilters = {
+                categories: [],
+                priceMax: 500,
+                conditions: [],
+                rating: null,
+                shipping: [],
+                search: currentFilters.search,
+                sort: currentFilters.sort
+            };
+            
+            // Reset all form elements
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
+            document.getElementById('priceRange').value = 500;
+            document.getElementById('priceValue').textContent = '$500';
+            
+            updateActiveFilters();
+            loadProducts();
+        }
+        
+        function sortProducts(sortType) {
+            currentFilters.sort = sortType;
+            document.querySelector('.sort-dropdown').classList.remove('active');
+            loadProducts();
+        }
+        
+        function toggleSortDropdown() {
+            document.querySelector('.sort-dropdown').classList.toggle('active');
+        }
+        
+        function toggleMobileFilters() {
+            document.querySelector('.mobile-filters').classList.toggle('active');
+        }
+        
+        function applyMobileFilters() {
+            // Sync mobile filters with desktop
+            const mobileCategories = Array.from(document.querySelectorAll('.mobile-category-checkbox:checked'))
+                .map(cb => cb.value);
+            currentFilters.categories = mobileCategories;
+            
+            const mobilePrice = document.querySelector('.mobile-price-range').value;
+            currentFilters.priceMax = parseInt(mobilePrice);
+            document.getElementById('priceRange').value = mobilePrice;
+            document.getElementById('priceValue').textContent = `$${mobilePrice}`;
+            
+            toggleMobileFilters();
+            updateActiveFilters();
+            loadProducts();
+        }
+        
+        function loadProducts() {
+            // This would normally make an API call
+            // For demo purposes, we'll use the existing products from main.js
+            if (window.marketplace) {
+                let filteredProducts = [...window.marketplace.products];
+                
+                // Apply search filter
+                if (currentFilters.search) {
+                    filteredProducts = filteredProducts.filter(product => 
+                        product.name.toLowerCase().includes(currentFilters.search.toLowerCase()) ||
+                        product.description.toLowerCase().includes(currentFilters.search.toLowerCase())
+                    );
+                }
+                
+                // Apply category filter
+                if (currentFilters.categories.length > 0) {
+                    filteredProducts = filteredProducts.filter(product => 
+                        currentFilters.categories.includes(product.category)
+                    );
+                }
+                
+                // Apply price filter
+                filteredProducts = filteredProducts.filter(product => 
+                    product.price <= currentFilters.priceMax
+                );
+                
+                // Apply sorting
+                switch (currentFilters.sort) {
+                    case 'price-low':
+                        filteredProducts.sort((a, b) => a.price - b.price);
+                        break;
+                    case 'price-high':
+                        filteredProducts.sort((a, b) => b.price - a.price);
+                        break;
+                    case 'newest':
+                        filteredProducts.sort((a, b) => b.id - a.id);
+                        break;
+                    case 'rating':
+                        filteredProducts.sort((a, b) => b.rating - a.rating);
+                        break;
+                }
+                
+                displayProducts(filteredProducts);
+                document.getElementById('productCount').textContent = `Showing ${filteredProducts.length} products`;
+            }
+        }
+        
+        function displayProducts(products) {
+            const container = document.querySelector('.products-grid');
+            if (!container) return;
+            
+            container.innerHTML = products.map(product => createProductCard(product)).join('');
+            
+            // Animate new products
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: '.product-card',
+                    opacity: [0, 1],
+                    translateY: [20, 0],
+                    duration: 600,
+                    easing: 'easeOutQuart',
+                    delay: anime.stagger(50)
+                });
+            }
+        }
+        
+        function createProductCard(product) {
+            return `
+                <div class="product-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="relative">
+                        <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover">
+                        <button class="absolute top-2 right-2 bg-white rounded-full p-2 shadow-md hover:bg-gray-100 transition-colors" 
+                                data-action="add-to-watchlist" data-product-id="${product.id}">
+                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="font-semibold text-gray-900 mb-2 line-clamp-2">${product.name}</h3>
+                        <p class="text-gray-600 text-sm mb-2 line-clamp-2">${product.description}</p>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-2xl font-bold text-orange-600">$${product.price}</span>
+                            <div class="flex items-center">
+                                <div class="flex text-yellow-400">
+                                    ${generateStars(product.rating)}
+                                </div>
+                                <span class="text-gray-500 text-sm ml-1">(${product.reviews})</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-3">
+                            <span>Seller: ${product.seller}</span>
+                            <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">${product.condition}</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors font-medium" 
+                                    data-action="add-to-cart" data-product-id="${product.id}">
+                                Add to Cart
+                            </button>
+                            <a href="listing.html?id=${product.id}" class="bg-gray-100 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-200 transition-colors text-center">
+                                View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        function generateStars(rating) {
+            const fullStars = Math.floor(rating);
+            const hasHalfStar = rating % 1 !== 0;
+            let stars = '';
+            
+            for (let i = 0; i < fullStars; i++) {
+                stars += '<svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/></svg>';
+            }
+            
+            if (hasHalfStar) {
+                stars += '<svg class="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0v15z"/></svg>';
+            }
+            
+            return stars;
+        }
+        
+        // Load more products
+        document.querySelector('.load-more')?.addEventListener('click', function() {
+            showNotification('Loading more products...', 'info');
+            // In a real app, this would load the next page of results
+        });
+        
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `notification ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' :
+                'bg-blue-500'
+            }`;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            if (typeof anime !== 'undefined') {
+                anime({
+                    targets: notification,
+                    translateX: [300, 0],
+                    opacity: [0, 1],
+                    duration: 300,
+                    easing: 'easeOutQuart'
+                });
+            }
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                if (typeof anime !== 'undefined') {
+                    anime({
+                        targets: notification,
+                        translateX: [0, 300],
+                        opacity: [1, 0],
+                        duration: 300,
+                        easing: 'easeInQuart',
+                        complete: () => notification.remove()
+                    });
+                } else {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.sort-dropdown')) {
+                document.querySelector('.sort-dropdown').classList.remove('active');
+            }
+        });
+    </script>
+    
+    <!-- Main JavaScript -->
+    <script src="main.js"></script>
+</body>
+</html>
